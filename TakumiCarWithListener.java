@@ -12,96 +12,87 @@ import lejos.hardware.lcd.LCD;
 import lejos.robotics.Color;
 
 public class TakumiCarWithListener extends AbstCar implements KeyListener, ColorChangeListener {
-	
-	private Boolean flagBoolean = false;
-	
-	
-	public static void main(String[] args) {
-		LCD.drawString("ButtonEventCar", 0, 0);
-		TimeKeeper car = new TakumiCarWithListener();
-		car.start();
-	}
+    private Boolean flagBoolean = false;
+    private boolean isActive = false;
+    private int detectedBlue = 0;
+    
+    public static void main(String[] args) {
+        LCD.drawString("ButtonEventCar", 0, 0);
+        TimeKeeper car = new TakumiCarWithListener();
+        car.start();
+    }
 
-	public TakumiCarWithListener() {
-		colorChecker = ColorCheckerThread.getInstance();
-		driver = new TakumiGoodDriver("B", "C");
-		navigator = new TakumiGoodLeftEdgeTracer();
-		// ログ設定
-		logger = LoggerThread.getInstance();
-		logger.setCar(this);
-		// listener登録
-		Button.ESCAPE.addKeyListener(this);
-		Button.ENTER.addKeyListener(this);
-		colorChecker.addColorChangeListener(this);
-	}
+    public TakumiCarWithListener() {
+        colorChecker = ColorCheckerThread.getInstance();
+        driver = new TakumiGoodDriver("B", "C");
+        navigator = new TakumiGoodLeftEdgeTracer();
+        logger = LoggerThread.getInstance();
+        logger.setCar(this);
+        Button.ESCAPE.addKeyListener(this);
+        Button.ENTER.addKeyListener(this);
+        colorChecker.addColorChangeListener(this);
+    }
+
     private void switchNavigator() {
         if (flagBoolean) {
-            navigator = new TakumiGoodRightEdgeTracer();
-        } else {
             navigator = new TakumiGoodLeftEdgeTracer();
+        } else {
+            navigator = new TakumiGoodRightEdgeTracer();
         }
     }
 
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void run() {
-		isActive = true;
+    @Override
+    public void run() {
+        isActive = true;
         switchNavigator();
-		// while(!Button.ESCAPE.isDown() && this.checkerColorSensor.getColorId() != Color.RED) {
         while (this.isActive) {
-            // 現在のnavigatorを使用
             navigator.decision(colorChecker, driver);
         }
-	
-	}
+    }
 
-	/**
-	 *  キーが押された時の動作
-	 *  @param k	押されたキーの種類 （lejos.hardwar e.Button で宣言された static フィールド）
-	 */
-	@Override
-	public void keyPressed(Key k) {
-		
-		// ESCキーが押された時の動作
-		if (k == Button.ESCAPE) {
-			this.isActive = false;
-			this.driver.stop();
-		}else if(k == Button.ENTER) {
+    @Override
+    public void keyPressed(Key k) {
+        if (k == Button.ESCAPE) {
+            this.isActive = false;
+            this.driver.stop();
+        } else if(k == Button.ENTER) {
             flagBoolean = !flagBoolean;
-            switchNavigator(); // navigatorを切り替え
-		}
-	}
+            switchNavigator();
+        }
+    }
 
-	/**
-	 * キーが離された時の動作．基本的に必要ないので，内容を記述する必要なし．
-	 *  @param k	押されたキーの種類 （lejos.hardware.Button で宣言された static フィールド）
-	 */
-	@Override
-	public void keyReleased(Key k) {
-		// 必要ないので，何も記述しない
-	}
+    @Override
+    public void keyReleased(Key k) {
+    }
 
-	/**
-	 * 色の変化の通知を受けた時の動作
-	 * @param colorId 変化後の色の番号
-	 */
-	@Override
-	public void colorChangeDetected(int colorId) {
-		if (colorId == Color.RED) {
-			this.isActive = false;
-			this.driver.stop();
-		}else if (colorId == Color.BLUE) {
-			flagBoolean = !flagBoolean;
-			switchNavigator();
-		}
-	}
+    @Override
+    public void colorChangeDetected(int colorId) {
+        if (colorId == Color.RED) {
+            this.isActive = false;
+            this.driver.stop();
+        } else if (colorId == Color.BLUE) {
+        	long startTime = System.currentTimeMillis();
+            long endTime = 0;
+        	if (detectedBlue == 0) {
+        		endTime = startTime + 470;
+            	detectedBlue = detectedBlue + 1;
+        	}else if(detectedBlue == 1) {
+        		 endTime = startTime + 900;
+        		detectedBlue = detectedBlue + 1;
+        	}else if(detectedBlue == 2) {
+        		endTime = startTime + 800;
+        		detectedBlue = detectedBlue + 1;
+        	}else if(detectedBlue == 3) {
+        		endTime = startTime + 500;
+        	}
 
-	/**
-	 * 動作継続条件
-	 */
-	private boolean isActive = false;
-
+            this.driver.stop();
+            while (System.currentTimeMillis()< endTime) {
+            	 this.driver.goStraight();
+                 this.driver.forward();
+            }
+            flagBoolean = !flagBoolean;
+            switchNavigator();
+        }
+    }
 }
