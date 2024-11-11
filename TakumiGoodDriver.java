@@ -3,9 +3,9 @@ package jp.ac.kanazawait.ep.takuchan;
 import jp.ac.kanazawait.ep.majorlabB.driver.AbstDriver;
 
 public class TakumiGoodDriver extends AbstDriver {
-    private final int SPEED_STRAIGHT = 370;
-    private final int SPEED_TURN = 220;
-    private final int SPEED_SHARP = 150;
+    private final int SPEED_STRAIGHT = 390;
+    private final int SPEED_TURN = 230;
+    private final int SPEED_SHARP = 130;
     
     public TakumiGoodDriver(String portLeft, String portRight) {
         setMotor(portLeft, portRight);

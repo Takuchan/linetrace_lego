@@ -74,19 +74,22 @@ public class TakumiCarWithListener extends AbstCar implements KeyListener, Color
         	long startTime = System.currentTimeMillis();
             long endTime = 0;
         	if (detectedBlue == 0) {
-        		endTime = startTime + 470;
+        		endTime = startTime + 430;
+        		this.driver.turnRightGently();
             	detectedBlue = detectedBlue + 1;
         	}else if(detectedBlue == 1) {
-        		 endTime = startTime + 900;
+        		 endTime = startTime + 1000;
         		detectedBlue = detectedBlue + 1;
+        		this.driver.turnLeftGently();
         	}else if(detectedBlue == 2) {
-        		endTime = startTime + 800;
+        		endTime = startTime + 1300;
         		detectedBlue = detectedBlue + 1;
+        		this.driver.turnLeftGently();
         	}else if(detectedBlue == 3) {
         		endTime = startTime + 500;
+        		this.driver.turnRightGently();
         	}
 
-            this.driver.stop();
             while (System.currentTimeMillis()< endTime) {
             	 this.driver.goStraight();
                  this.driver.forward();
